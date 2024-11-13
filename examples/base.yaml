@@ -1,0 +1,29 @@
+options:
+  layer_type: 'base'
+  name: 'alma-base'
+  pkg_manager: 'dnf'
+  parent: 'scratch'
+  publish_local: true
+  publish_tags: v0.0.1
+
+repos:
+  - alias: 'Alma_BaseOS'
+    url: 'https://repo.almalinux.org/almalinux/8/BaseOS/x86_64/os/'
+  - alias: 'Alma_AppStream'
+    url: 'https://repo.almalinux.org/almalinux/8/AppStream/x86_64/os'
+  - alias: 'Alma_PowerTools'
+    url: 'https://repo.almalinux.org/almalinux/8/PowerTools/x86_64/os'
+
+package_groups:
+  - 'Minimal Install'
+  - 'Development Tools'
+
+packages:
+  - kernel
+  - wget
+
+remove_packages:
+  - alma-repos
+
+cmds:
+  - 'echo alma linux base'

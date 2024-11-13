@@ -1,0 +1,28 @@
+---
+- name: set timezone
+  timezone:
+    name: '{{ ntp_timezone }}'
+
+- name: ensure chrony is installed
+  package:
+    name: chrony
+    state: present
+
+- name: configure chronyd
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: enable chronyd service
+  systemd:
+    name: chronyd
+    enabled: true
+
+- name: replace 'LOCAL' with 'UTC' in /etc/adjtime for Chrony client
+  replace:
+    regexp: '^LOCAL$'
+    replace: 'UTC'
+    path: "/etc/adjtime"

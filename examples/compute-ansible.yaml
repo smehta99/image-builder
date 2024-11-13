@@ -1,0 +1,9 @@
+options:
+  layer_type: 'ansible'
+  name: 'compute-ansible'
+  parent: 'alma-base:v0.0.1'
+  publish_local: true'
+  groups: 
+    - 'compute'
+  playbooks: '/data/configs/playbooks/compute.yaml'
+  inventory: '/data/configs/inventory/'
