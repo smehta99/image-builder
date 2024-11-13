@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+import argparse
+import logging
+import sys
+
+# written modules
+from image_config import ImageConfig
+from layer import Layer
+from arguments import process_args, print_args
+
+# Constants
+DEFAULT_LOGGING = "WARN"
+REQUIRED_ARGUMENTS = ['config']
+
+def main():
+    # disable annoying insecure connections
+    #request.packages.urllib3.disable_warnings()
+
+    # Main arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--log-level', dest="log_level", default=DEFAULT_LOGGING, required=False)
+    parser.add_argument('--name', type=str)
+    parser.add_argument('--parent', type=str)
+    parser.add_argument('--proxy', dest="proxy", type=str, required=False)
+    parser.add_argument('--publish-s3', dest="publish_s3", type=str, required=False)
+    parser.add_argument('--publish-registry', dest="publish_registry", type=str, required=False)
+    parser.add_argument('--publish-local', dest="publish_local", action='store_true', required=False)
+    parser.add_argument('--publish-tags', dest="publish_tags", action='store', nargs='+', type=str, default=[])
+    parser.add_argument('--s3-prefix', dest="s3_prefix", type=str, required=False)
+    parser.add_argument('--s3-bucket', dest="s3_bucket", type=str, required=False)
+    parser.add_argument('--registry-opts-pull', dest="registry_opts_pull", type=str, required=False)
+    parser.add_argument('--registry-opts-push', dest="registry_opts_push", type=str, required=False)
+    parser.add_argument('--layer-type', dest="layer_type", type=str, required=False)
+    parser.add_argument('--config', type=str, required=True, help='Configuration file is required')
+    parser.add_argument('--repo', type=str, required=False)
+    parser.add_argument('--pkg-manager', dest="pkg_man", type=str, required=False)
+    parser.add_argument('--groups', dest='group_list', action='store', nargs='+', type=str, default=[], help='List of groups')
+    parser.add_argument('--vars', dest='vars', action='store', nargs='+', type=str, default=[], help='List of variables')
+    parser.add_argument('--pb', type=str)
+    parser.add_argument('--inventory', nargs='+', default=[], help='Inventory list')
+    
+    try:
+        terminal_args = parser.parse_args()
+
+        # Go through config file
+        image_config = ImageConfig(terminal_args.config)
+        config_options = image_config.get_options()
+        
+        args = process_args(terminal_args, config_options)
+
+        level = getattr(logging, args['log_level'].upper(), 10)
+        logging.basicConfig(format='%(levelname)s - %(message)s',level=level)
+
+       	print_args(args) 
+
+    except argparse.ArgumentError as e:
+        print(f"Argument error: {e}")
+        sys.exit(1)
+    except argparse.ArgumentTypeError as e:
+        print(f"Invalid argument type: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+
+    try:
+        layer = Layer(args, image_config)
+        layer.build_layer()
+    except Exception as e:
+        print(f"Error building layer: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

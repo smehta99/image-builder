@@ -1,0 +1,2 @@
+chrony_server: 10.1.0.1
+chrony_timezone: 'America/Denver'
