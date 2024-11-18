@@ -20,7 +20,7 @@ RUN pip3.11 install ansible ansible-base ansible-bender boto3 dnspython requests
 COPY src/ /usr/local/bin/
 RUN chmod -R 0755 /usr/local/bin/
 
-RUN mkdir /tmp/dnf/log && \
+RUN mkdir -p /tmp/dnf/log && \
     mkdir /tmp/dnf/cache && \
     mkdir /tmp/dnf/repos.d
 
