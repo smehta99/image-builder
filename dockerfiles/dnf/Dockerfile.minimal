@@ -21,7 +21,6 @@ RUN echo "builder:x:1002:1002::/home/builder:/bin/bash" >> /etc/passwd && \
     mkdir -p /home/builder && \
     chown -R 1002:1002 /home/builder
 
-
 # Add our custom scripts
 COPY src/ /usr/local/bin/
 RUN chmod -R 0755 /usr/local/bin/
