@@ -8,8 +8,14 @@ from ansible.playbook import Playbook
 from ansible.vars.manager import VariableManager
 from ansible.config.manager import ConfigManager, Setting
 from ansible.cli.config import ConfigCLI
-from ansible.plugins.loader import init_plugin_loader
 from ansible.parsing.yaml.objects import AnsibleVaultEncryptedUnicode
+
+try:
+    from ansible.plugins.loader import init_plugin_loader
+    plugin_loader_available = True
+except ImportError:
+    # Fallback for older Ansible versions where `init_plugin_loader` doesn't exist
+    plugin_loader_available = False
 
 import subprocess
 import logging
@@ -63,7 +69,8 @@ def cmd(
    
 def run_playbook(cnames, ansible_inv):
 
-    init_plugin_loader()
+    if plugin_loader_available:
+        init_plugin_loader()
 
     loader = DataLoader()
     inventory = InventoryManager(loader=loader, sources=ansible_inv)

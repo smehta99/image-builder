@@ -1,0 +1,37 @@
+options:
+  layer_type: 'base'
+  name: 'compute-slurm'
+  publish_tags:
+    - '8.10'
+    - 'latest'
+  pkg_manager: 'dnf'
+  parent: 'internal.openchami.dev/boot-images/compute-base:8.9'
+
+
+  # Publish to SI registry
+  publish_registry: 'internal.openchami.dev/boot-images/'
+ 
+
+      #repos:
+      #  - alias: 'elrepo'
+      #    url: 'http://elrepo.org/linux/elrepo/el8/x86_64/'
+
+packages:
+  - elrepo-release
+  - slurm-ohpc
+  - slurm-slurmd-ohpc
+  - slurm-example-configs-ohpc
+  - kernel-headers
+  - wireguard-tools
+  - kmod-wireguard
+
+copyfiles:
+  - src: '/data/image-configs/files/id_rsa.pub'
+    dest: '/root/.ssh/authorized_keys'
+
+
+cmds:
+  - cmd: 'chown -R munge:munge /var/lib/munge'
+  - cmd: 'chown -R munge:munge /var/log/munge'
+  - cmd: 'chown -R munge:munge /etc/munge'
+  - cmd: 'echo test123456 | passwd root --stdin'

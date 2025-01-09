@@ -1,0 +1,42 @@
+options:
+  layer_type: 'base'
+  name: 'compute-base'
+  publish_tags:
+    - '8.9'
+    - 'latest'
+  pkg_manager: 'dnf'
+  parent: 'internal.openchami.dev/boot-images/rocky8-base:8.9'
+  registry_opts_pull:
+    - '--tls-verify=false'
+
+  # Publish to SI registry
+  publish_registry: 'registry.dist.si.usrc:5000/stratus'
+  registry_opts_push:
+    - '--tls-verify=false'
+
+repos:
+  - alias: 'OpenHPC'
+    url: 'https://repos.openhpc.community/OpenHPC/2/EL_8/'
+    gpg: 'https://repos.openhpc.community/OpenHPC/2/EL_8/repodata/repomd.xml.key'
+  - alias: 'OpenHPC-updates'
+    url: 'https://repos.openhpc.community/OpenHPC/2/update.2.9/EL_8/'
+    gpg: 'https://repos.openhpc.community/OpenHPC/2/update.2.9/EL_8/repodata/repomd.xml.key'
+
+packages:
+  - python3
+  - nfs-utils
+  - chrony
+  - cmake3
+  - dmidecode
+  - fortune-mod
+  - hwloc
+  - libpsm2
+  - libpsm2-compat
+  - make
+  - ohpc-base-compute
+  - perf
+  - sqlite
+  - tcpdump
+  - traceroute
+  - nss_db
+  - lua-posix
