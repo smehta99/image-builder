@@ -14,7 +14,6 @@ RUN microdnf install -y \
     python3.11 -m pip install --upgrade pip && \
     microdnf clean all
 
-
 # Create local user for rootless image builds
 RUN echo "builder:x:1002:1002::/home/builder:/bin/bash" >> /etc/passwd && \
     echo "builder:x:1002:" >> /etc/group && \
