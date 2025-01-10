@@ -45,5 +45,5 @@ jobs:
                 file: dockerfiles/Dockerfile.minimal
                 push: true
                 tags: |
-                  ghcr.io/${{ github.repository }}/image-build:latest
-                  ghcr.io/${{ github.repository }}/image-build:${{ steps.extract_version.outputs.version }}
+                  ghcr.io/openchami/image-build:latest
+                  ghcr.io/openchami/image-build:${{ steps.extract_version.outputs.version }}
