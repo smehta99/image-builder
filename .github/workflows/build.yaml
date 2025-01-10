@@ -46,4 +46,3 @@ jobs:
                 push: true
                 tags: |
                   ghcr.io/openchami/image-build:latest
-                  ghcr.io/openchami/image-build:${{ steps.extract_version.outputs.version }}
