@@ -5,14 +5,14 @@ on:
         branches:
             - main
         paths:
-            - '/dockerfiles/dnf/Dockerfile.minimal'
+            - 'dockerfiles/dnf/Dockerfile'
         tags:
             - 'v*.*.*'
     pull_request:
         branches:
             - main
         paths:
-            - '/dockerfiles/dnf/Dockerfile.minimal'
+            - 'dockerfiles/dnf/Dockerfile'
     workflow_dispatch:
 
 jobs:
