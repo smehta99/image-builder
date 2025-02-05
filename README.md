@@ -3,6 +3,15 @@
 A wrapper around various `buildah` commands that makes creating images in layers easier.
 There are two supported modes at the moment, a "base" type layer and an "ansible" type layer
 
+# Setup
+
+> [!NOTE]
+> Python >= 3.7 is required.
+
+```
+pip install -r requirements.txt
+```
+
 # Base Type layer
 The premise here is very simple. The `image-build` tool builds a base layer by starting a container, then using the provided package manager to install repos and packages. There is limited support for running basic commands inside the container. These settings are provided in a config file and command line options
 

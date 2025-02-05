@@ -70,4 +70,8 @@ def main():
         sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    # Make sure Python >= 3.7 is being used
+    if sys.version_info[0] >= 3 and sys.version_info[1] >= 7:
+        main()
+    else:
+        raise Exception("Python >= 3.7 is required!")
