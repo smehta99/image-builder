@@ -83,4 +83,4 @@ WORKDIR /home/builder
 
 ENV BUILDAH_ISOLATION=chroot
 
-ENTRYPOINT ["/usr/bin/buildah", "unshare", "bash", "-c"]
+ENTRYPOINT ["/usr/bin/buildah", "unshare"]
