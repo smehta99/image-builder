@@ -9,10 +9,11 @@ The recommended way to run `image-build` is through the container as it avoids a
 
 ## Container
 
-To build an image using the container, you will need to map the config file into the container, as well as the FUSE filesystem device:
+The supported way for running the container is via [Podman](https://podman.io/).
+To build an image using the container, the config file needs to be mapped into the container, as well as the FUSE filesystem device:
 
 ```
-docker run \
+podman run \
   --rm \
   --device /dev/fuse \
   -v /path/to/config.yaml:/home/builder/config.yaml \
@@ -21,15 +22,6 @@ docker run \
 ```
 
 If the config.yaml pushes to S3, specify the credentials by adding `-e S3_ACCESS=<s3-user>` and `-e S3_SECRET=<s3-password>` to the command above.
-
-> [!NOTE]
-> If an error occurs such as:
-> ```
-> Error during unshare(CLONE_NEWUSER): Operation not permitted
-> time="2025-02-06T07:47:00Z" level=error msg="parsing PID \"\": strconv.Atoi: parsing \"\": invalid syntax"
-> time="2025-02-06T07:47:00Z" level=error msg="(Unable to determine exit status)"
-> ```
-> Try adding `--security-opt seccomp=unconfined`.
 
 ## Bare Metal
 
@@ -50,7 +42,7 @@ image-build --config /path/to/config.yaml
 
 From the root of the repository:
 ```
-docker build -t ghcr.io/openchami/image-buildi:latest -f src/dockerfiles/Dockerfile .
+buildah bud -t ghcr.io/openchami/image-buildi:latest -f src/dockerfiles/Dockerfile .
 ```
 
 # Configuration
