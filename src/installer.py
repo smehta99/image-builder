@@ -14,7 +14,8 @@ class Installer:
 
         # Create temporary directory for logs, cache, etc. for package manager
         os.makedirs(os.path.join(mname, "tmp"))
-        self.tdir = tempfile.mkdtemp(dir=os.path.join(self.mname, "tmp"), prefix="image-build-")
+        self.tdir = tempfile.mkdtemp(prefix="image-build-")
+        logging.info(f'Installer: Temporary directory for {self.pkg_man} created at {self.tdir}')
 
         if pkg_man == "dnf":
             # DNF complains if the log directory is not present
