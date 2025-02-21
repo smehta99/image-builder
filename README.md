@@ -55,13 +55,13 @@ An example config file:
 ```
 repos:
   - alias: 'Rock_BaseOS'
-    url: 'http://<repo_server>/repo/pub/rocky/8/BaseOS/x86_64/os'
+    url: 'http://dl.rockylinux.org/pub/rocky/8/BaseOS/x86_64/os'
   - alias: 'Rock_AppStream'
-    url: 'http://<repo_server>/repo/pub/rocky/8/AppStream/x86_64/os'
+    url: 'http://dl.rockylinux.org/pub/rocky/8/AppStream/x86_64/os'
   - alias: 'Rock_PowerTools'
-    url: 'http://<repo_server>/repo/pub/rocky/8/PowerTools/x86_64/os'
+    url: 'http://dl.rockylinux.org/pub/rocky/8/PowerTools/x86_64/os'
   - alias: 'Epel'
-    url: 'http://<repo_server>/repo/pub/rocky/epel/8/Everything/x86_64/'
+    url: 'http://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/'
 
 package_groups:
   - 'Minimal Install'
@@ -72,7 +72,7 @@ packages:
   - wget
 
 cmds:
-  - 'echo hello'
+  - cmd: 'echo hello'
 ```
 
 Then you can use this config file to build an "base" layer:
