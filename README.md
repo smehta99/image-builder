@@ -5,11 +5,8 @@ There are two supported modes at the moment, a "base" type layer and an "ansible
 
 # Running
 
-The recommended way to run `image-build` is through the container as it avoids any Python dependency troubles.
+The recommended and official way to run `image-build` is using the `ghcr.io/openchami/image-build` container (specifically using [Podman](https://podman.io)) as it avoids Python versioning/dependency troubles. Running bare-metal is not officially supported, though it is possible to do at one's own risk. Using Docker has caused issues and is not officially supported, though it is probably possible (again, at one's own risk) with some tweaking.
 
-## Container
-
-The supported way for running the container is via [Podman](https://podman.io/).
 To build an image using the container, the config file needs to be mapped into the container, as well as the FUSE filesystem device:
 
 ```
@@ -23,26 +20,11 @@ podman run \
 
 If the config.yaml pushes to S3, specify the credentials by adding `-e S3_ACCESS=<s3-user>` and `-e S3_SECRET=<s3-password>` to the command above. See [S3](#s3) below.
 
-## Bare Metal
-
-> [!WARNING]
-> Python >= 3.7 is required!
-
-Install the Python package dependencies:
-```
-pip install -r requirements.txt
-```
-
-Run the tool:
-```
-image-build --config /path/to/config.yaml
-```
-
 # Building Container
 
 From the root of the repository:
 ```
-buildah bud -t ghcr.io/openchami/image-buildi:latest -f src/dockerfiles/Dockerfile .
+buildah bud -t ghcr.io/openchami/image-build:latest -f src/dockerfiles/Dockerfile .
 ```
 
 # Configuration
