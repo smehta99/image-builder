@@ -1,4 +1,4 @@
-FROM almalinux:8.8
+FROM docker.io/library/almalinux:8.8
 
 RUN dnf clean all && \
     dnf update --nogpgcheck -y && \
