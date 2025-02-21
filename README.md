@@ -51,43 +51,111 @@ buildah bud -t ghcr.io/openchami/image-buildi:latest -f src/dockerfiles/Dockerfi
 
 The premise here is very simple. The `image-build` tool builds a base layer by starting a container, then using the provided package manager to install repos and packages. There is limited support for running basic commands inside the container. These settings are provided in a config file and command line options
 
-An example config file:
-```
+An example config file that builds a base OS image based on Rocky 8.10:
+
+```yaml
+# Example image-build config for a base-type image.
+
+# Global image-build options for this image
+options:
+  # Build a "normal" layer (as opposed to an Ansible-type layer)
+  layer_type: 'base'
+
+  # Name and tag for this image, used in publishing to OCI registries
+  # and S3 for identification.
+  name: 'rocky-base'
+  publish_tags: '8.10'
+
+  # Distribution flavor of image.
+  pkg_manager: 'dnf'
+
+  # Starting filesystem of image. 'scratch' means to start with a blank
+  # filesystem. Currently, only OCI images can be used as parents. In
+  # this example, the image is pushed to:
+  #
+  #  registry.mysite.tld/my-images/rocky-base:8.10
+  #
+  # This value can be used as the value to 'parent' if one wished to use
+  # the 'rocky-base:8.10' image as a parent.
+  parent: 'scratch'
+
+  # Publish OCI image to local podman registry. Note that if running
+  # the image-build container, this option will not be a benefit if
+  # the container is removed after running, since the container gets
+  # deleted after the build process exits.
+  #publish_local: true
+
+  # Publish OCI image to container registry. This image can be used
+  # as a parent for child images. Use this when this image should
+  # be used as a parent for subsequent images.
+  #
+  # The below config, combined with 'name' and 'publish_tags', will
+  # publish this OCI image to:
+  #
+  #  registry.mysite.tld/my-images/rocky-base:8.10
+  #
+  publish_registry: 'registry.mysite.tld/my-images'
+  registry_opts_push:
+    - '--tls-verify=false'
+
+  # Publish to S3 instance. This image be used for booting. Use this
+  # if an image is to be used for booting.
+  #
+  # The below config, combined with 'name' and 'publish_tags', will
+  # publish this SquashFS image to:
+  #
+  #  http://s3.mysite.tld/boot-images/compute/base/rocky8.10-rocky-base-8.10
+  #
+  publish_s3: 'http://s3.mysite.tld'
+  s3_prefix: 'compute/base/'
+  s3_bucket: 'boot-images'
+
+# Package repositories to add. This example uses YUM/DNF repositories.
 repos:
-  - alias: 'Rock_BaseOS'
+  - alias: 'rocky-baseos'
     url: 'http://dl.rockylinux.org/pub/rocky/8/BaseOS/x86_64/os'
-  - alias: 'Rock_AppStream'
+  - alias: 'rock_appstream'
     url: 'http://dl.rockylinux.org/pub/rocky/8/AppStream/x86_64/os'
-  - alias: 'Rock_PowerTools'
+  - alias: 'rock_powertools'
     url: 'http://dl.rockylinux.org/pub/rocky/8/PowerTools/x86_64/os'
-  - alias: 'Epel'
+  - alias: 'epel'
     url: 'http://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/'
 
+# Package groups to install, in this example YUM/DNF package groups.
 package_groups:
   - 'Minimal Install'
   - 'Development Tools'
 
+# List of packages to install after repos get added. These names get passed
+# straight to the package manager.
 packages:
   - kernel
   - wget
 
+# List of commands to run after package management steps get run. Each
+# command gets passed to the shell, so redirection can be used. Besides
+# 'cmd', an optional 'loglevel` can be passed (e.g. 'INFO', 'DEBUG') to
+# control command verbosity. By default, it is 'INFO'.
 cmds:
   - cmd: 'echo hello'
 ```
 
-Then you can use this config file to build an "base" layer:
-```
-image-build --name base-os \
-    --config base.yaml \
-    --pkg-manager dnf \
-    --parent scratch \
-    --publish-tags 8.8 \
-    --layer-type base
-```
+Then you can use this config file to build a "base" layer (make sure the `S3_ACCESS` and `S3_SECRET` environment variables are set to the S3 credentials if being used):
 
-You can then build on top of this base os with a new config file, just point the `--parent` flag at the base os container image
+```
+podman run \
+  --rm \
+  --device /dev/fuse \
+  -v /path/to/config.yaml:/home/builder/config.yaml:Z \
+  -e "S3_ACCESS=${S3_ACCESS}" \
+  -e "S3_SECRET=${S3_SECRET}" \
+  ghcr.io/openchami/image-build \
+  image-build --config config.yaml --log-level DEBUG
+```
 
 See [Publishing Images](#publishing-images) below for more explanation on how `image-build` publishes images.
+
+You can then build on top of this base os with a new config file, just point the `parent` key at the base os container image, in the above example, `registry.mysite.tld/my-images/rocky-base:8.10`.
 
 
 ## Ansible Type Layer
