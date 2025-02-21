@@ -13,7 +13,7 @@ class Installer:
         self.mname = mname
 
         # Create temporary directory for logs, cache, etc. for package manager
-        os.makedirs(os.path.join(mname, "tmp"))
+        os.makedirs(os.path.join(mname, "tmp"), exist_ok=True)
         self.tdir = tempfile.mkdtemp(prefix="image-build-")
         logging.info(f'Installer: Temporary directory for {self.pkg_man} created at {self.tdir}')
 
