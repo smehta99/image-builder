@@ -45,7 +45,7 @@ jobs:
         id: set_tag
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG="ghcr.io/openchami/image-build:v${GITHUB_REF#refs/tags/}"
+            TAG="ghcr.io/openchami/image-build:${GITHUB_REF#refs/tags/}"
           elif [[ "${GITHUB_REF}" == refs/pull/* ]]; then
             TAG="ghcr.io/openchami/image-build:latest-prbuild"
           else
