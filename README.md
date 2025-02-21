@@ -21,7 +21,7 @@ podman run \
   image-build --config config.yaml
 ```
 
-If the config.yaml pushes to S3, specify the credentials by adding `-e S3_ACCESS=<s3-user>` and `-e S3_SECRET=<s3-password>` to the command above.
+If the config.yaml pushes to S3, specify the credentials by adding `-e S3_ACCESS=<s3-user>` and `-e S3_SECRET=<s3-password>` to the command above. See [S3](#s3) below.
 
 ## Bare Metal
 
@@ -87,6 +87,8 @@ image-build --name base-os \
 
 You can then build on top of this base os with a new config file, just point the `--parent` flag at the base os container image
 
+See [Publishing Images](#publishing-images) below for more explanation on how `image-build` publishes images.
+
 
 ## Ansible Type Layer
 
@@ -111,13 +113,16 @@ The `image-build` tool can publish the image layers to a few kinds of endpoints
 
 ## S3
 
-using the `--publish-s3 <URL>` option will push to an s3 endpoint defined in an ENV variable: `S3_URL`.
-You can also set the access and secret values with `S3_ACCESS` and `S3_SECRET` respectively
+Using the `--publish-s3 <URL>` flag or `publish-s3` config key will push to an S3 endpoint.
+
+Credentials for S3 can be set via environment variables. Use `S3_ACCESS` for the username and `S3_SECRET` for the password.
 
 ## Registry
 
-Using the `--publish-registry <URL>` option will push to a docker registry defined in an ENV variable: `REGISTRY_EP`. You can point to a certs directory by setting `REGISTRY_CERTS_DIR`.
+Using the `--publish-registry <URL>` flag or `publish-registry` config key will push to the passed registry base URL (not including image tag). Use `--registry-opts-push`/`registry-opts-push` to specify flags/args to pass to the `buildah push` command to push.
+
+There is an equivalent flag/config option `--registry-opts-pull`/`registry-opts-pull` whose value is passed to the `buildah push` command to pull the parent OCI image.
 
 ## Local
 
-Using the `--publish-local` option will squash the layer and copy it to a destination defined in `--publish-dest`.
+Using the `--publish-local` flag or `publish-local` config key will push the resulting OCI image to the local podman registry using `buildah commit`.
