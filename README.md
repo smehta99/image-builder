@@ -46,6 +46,8 @@ options:
   # Name and tag for this image, used in publishing to OCI registries
   # and S3 for identification.
   name: 'rocky-base'
+  # One or more tags to publish image with. If one, value is a string.
+  # If multiple, the value is a YAML array of strings.
   publish_tags: '8.10'
 
   # Distribution flavor of image.
@@ -55,7 +57,7 @@ options:
   # filesystem. Currently, only OCI images can be used as parents. In
   # this example, the image is pushed to:
   #
-  #  registry.mysite.tld/my-images/rocky-base:8.10
+  #  registry.mysite.tld/openchami/rocky-base:8.10
   #
   # This value can be used as the value to 'parent' if one wished to use
   # the 'rocky-base:8.10' image as a parent.
@@ -74,9 +76,9 @@ options:
   # The below config, combined with 'name' and 'publish_tags', will
   # publish this OCI image to:
   #
-  #  registry.mysite.tld/my-images/rocky-base:8.10
+  #  registry.mysite.tld/openchami/rocky-base:8.10
   #
-  publish_registry: 'registry.mysite.tld/my-images'
+  publish_registry: 'registry.mysite.tld/openchami'
   registry_opts_push:
     - '--tls-verify=false'
 
@@ -137,25 +139,65 @@ podman run \
 
 See [Publishing Images](#publishing-images) below for more explanation on how `image-build` publishes images.
 
-You can then build on top of this base os with a new config file, just point the `parent` key at the base os container image, in the above example, `registry.mysite.tld/my-images/rocky-base:8.10`.
+You can then build on top of this base os with a new config file, just point the `parent` key at the base os container image, in the above example, `registry.mysite.tld/openchami/rocky-base:8.10`.
 
 
 ## Ansible Type Layer
 
-You can also run an ansible playbook against a buildah container. This type using the Buildah connection plugin in ansible to treat the container as a host.
-```
-image-build \
-    --name ansible-layer \
-    --parent base-os \
-    --groups compute \
-    --pb playbook.yaml \
-    --inventory my_inventory/ \
-    --publish-tags v1 \
-    --layer-type ansible
+You can also run an Ansible playbook against a buildah container. This type of layer uses the Buildah connection plugin in Ansible to treat the container as a host.
+
+Configuration for an Ansible-type layer is largely the same as a base-type layer configuration with a few differences.
+
+```yaml
+# An Ansible-type layer only needs the global options block.
+options:
+  # Layer type us 'ansible' instead of 'base'
+  layer_type: 'ansible'
+
+  # Ansible-specific options.
+  #
+  # 'groups' defines the Ansible groups in the passed inventory to run the
+  # playbook(s) on.
+  groups:
+    - 'img_ochami_compute'
+    - 'img_ochami'
+  #
+  # The playbook(s) to run against the image.
+  playbooks: 'playbooks/images/compute.yaml'
+  #
+  # The Ansible inventory to pass corresponding with the playbook(s).
+  inventory: 'inventory/'
+
+  # Everything else is the same format as base layer.
+  name: 'ansible-layer'
+  publish_tags: '8.10'
+  parent: 'registry.mysite.tld/openchami/rocky-base:8.10'
+  publish_registry: 'registry.mysite.tld/openchami'
+  registry_opts_push:
+    - '--tls-verify=false'
+  publish_s3: 'http://s3.mysite.tld'
+  s3_prefix: 'compute/ansible/'
+  s3_bucket: 'boot-images'
 ```
 
-This requires the parent to be setup to run ansible tasks
+Build the image with:
 
+```
+podman run \
+  --rm \
+  --device /dev/fuse \
+  -v /path/to/config.yaml:/home/builder/config.yaml:Z \
+  -v /path/to/ansible/inventory/:/home/builder/inventory/:Z \
+  -v /path/to/ansible/playbooks/:/home/builder/playbooks/:Z \
+  -e "S3_ACCESS=${S3_ACCESS}" \
+  -e "S3_SECRET=${S3_SECRET}" \
+  ghcr.io/openchami/image-build \
+  image-build --config config.yaml --log-level DEBUG
+```
+
+> [!NOTE]
+> In order to be able to use Ansible on the image, the parent must be set up to
+> use Ansible (e.g. Ansible must be installed, etc.).
 
 # Publishing Images
 
