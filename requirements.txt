@@ -1,3 +1,8 @@
 ansible
+ansible-base
+ansible-bender
 boto3
+dnspython
+jinja2_ansible_filters
 PyYAML
+requests

@@ -15,7 +15,8 @@ RUN dnf install -y \
         squashfs-tools \
 	fuse-overlayfs
 
-RUN pip3.11 install ansible ansible-base ansible-bender boto3 dnspython requests jinja2_ansible_filters
+COPY requirements.txt /
+RUN pip3.11 install -r /requirements.txt
 
 COPY src/ /usr/local/bin/
 RUN chmod -R 0755 /usr/local/bin/
