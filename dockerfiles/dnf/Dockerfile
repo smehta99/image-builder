@@ -1,4 +1,4 @@
-FROM almalinux:8.8
+FROM docker.io/library/almalinux:8.8
 
 RUN dnf clean all && \
     dnf update --nogpgcheck -y && \
@@ -15,14 +15,11 @@ RUN dnf install -y \
         squashfs-tools \
 	fuse-overlayfs
 
-RUN pip3.11 install ansible ansible-base ansible-bender boto3 dnspython requests jinja2_ansible_filters
+COPY requirements.txt /
+RUN pip3.11 install -r /requirements.txt
 
 COPY src/ /usr/local/bin/
 RUN chmod -R 0755 /usr/local/bin/
-
-RUN mkdir -p /tmp/dnf/log && \
-    mkdir /tmp/dnf/cache && \
-    mkdir /tmp/dnf/repos.d
 
 # Allow non-root to run buildah commands
 RUN setcap cap_setuid=ep "$(command -v newuidmap)" && \
