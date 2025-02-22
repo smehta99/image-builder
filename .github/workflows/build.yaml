@@ -19,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -45,7 +45,7 @@ jobs:
         id: set_tag
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG="ghcr.io/openchami/image-build:v${GITHUB_REF#refs/tags/}"
+            TAG="ghcr.io/openchami/image-build:${GITHUB_REF#refs/tags/}"
           elif [[ "${GITHUB_REF}" == refs/pull/* ]]; then
             TAG="ghcr.io/openchami/image-build:latest-prbuild"
           else
@@ -63,3 +63,28 @@ jobs:
           file: dockerfiles/dnf/Dockerfile
           push: true
           tags: ${{ steps.set_tag.outputs.tag }}
+
+      - name: Generate release notes
+        # Only run this step if version was computed from tag
+        if: steps.extract_version.outputs.version != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo '# image-build ${{ steps.extract_version.outputs.version }}'
+            echo
+            echo 'Pull with:'
+            echo
+            echo '```'
+            echo "podman pull ghcr.io/openchami/image-build:${{ steps.extract_version.outputs.version }}"
+            echo '```'
+            echo
+            gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" -F tag_name="${{ steps.extract_version.outputs.version }}" --jq .body
+          } > CHANGELOG.md
+
+      - name: Create release
+        # Only run this step if version was computed from tag
+        if: steps.extract_version.outputs.version != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create ${{ steps.extract_version.outputs.version }} -F CHANGELOG.md
