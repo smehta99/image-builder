@@ -168,7 +168,7 @@ options:
   # The Ansible inventory to pass corresponding with the playbook(s).
   inventory: 'inventory/'
   #
-  # The Ansible verbosity level, e.g., 1 (default), 2, 3
+  # The Ansible verbosity level, e.g., 1, 2, or 3
   ansible_verbosity: '3'
 
   # Everything else is the same format as base layer.
