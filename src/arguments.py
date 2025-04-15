@@ -27,6 +27,10 @@ def process_args(terminal_args, config_options):
         processed_args['ansible_pb'] = terminal_args.pb or config_options.get('playbooks', [])
         processed_args['ansible_inv'] = terminal_args.inventory or config_options.get('inventory', [])
         processed_args['ansible_vars'] = terminal_args.inventory or config_options.get('vars', {})
+        if terminal_args.ansible_verbosity not in [True, 1, 2, 3]:
+            raise ValueError(f"'ansible_verbosity: {terminal_args.ansible_verbosity}: must be 1, 2, or 3'")
+        else:
+            processed_args['ansible_verbosity'] = terminal_args.ansible_verbosity           
 
     processed_args['parent'] = terminal_args.parent or config_options.get('parent', 'scratch')
     processed_args['proxy'] = terminal_args.proxy or config_options.get('proxy', '')
