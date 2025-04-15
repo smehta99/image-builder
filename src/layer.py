@@ -113,7 +113,7 @@ class Layer:
 
         return cname
 
-    def _build_ansible(self, target, parent, ansible_groups, ansible_pb, ansible_inv, ansible_vars):
+    def _build_ansible(self, target, parent, ansible_groups, ansible_pb, ansible_inv, ansible_vars, ansible_verbosity):
         cnames = {}
         def buildah_handler(line):
             out.append(line)
@@ -129,7 +129,7 @@ class Layer:
                 }
 
         try:
-            pb_res = run_playbook(cnames, ansible_inv)
+            pb_res = run_playbook(cnames, ansible_inv, ansible_verbosity)
         except Exception as e:
             self.logger.error(e)
             cmd(["buildah","rm"] + [target])
@@ -158,8 +158,9 @@ class Layer:
             ansible_pb = self.args['ansible_pb']
             ansible_inv = self.args['ansible_inv']
             ansible_vars = self.args['ansible_vars']
+            ansible_verbosity = self.args['ansible_verbosity']
 
-            cname = self._build_ansible(layer_name, parent, ansible_groups, ansible_pb, ansible_inv, ansible_vars)
+            cname = self._build_ansible(layer_name, parent, ansible_groups, ansible_pb, ansible_inv, ansible_vars, ansible_verbosity)
         else:
             self.logger.error("Unrecognized layer type")
             sys.exit("Exiting now ...")
