@@ -28,7 +28,7 @@ def process_args(terminal_args, config_options):
         processed_args['ansible_inv'] = terminal_args.inventory or config_options.get('inventory', [])
         processed_args['ansible_vars'] = terminal_args.inventory or config_options.get('vars', {})
         if terminal_args.ansible_verbosity not in [True, 1, 2, 3]:
-            raise ValueError(f"'ansible_verbosity: {terminal_args.ansible_verbosity}: must be 1, 2, or 3'")
+            raise ValueError(f"ansible_verbosity: {terminal_args.ansible_verbosity}: must be 1, 2, or 3")
         else:
             processed_args['ansible_verbosity'] = terminal_args.ansible_verbosity           
 
