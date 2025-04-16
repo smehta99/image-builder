@@ -27,11 +27,20 @@ def process_args(terminal_args, config_options):
         processed_args['ansible_pb'] = terminal_args.pb or config_options.get('playbooks', [])
         processed_args['ansible_inv'] = terminal_args.inventory or config_options.get('inventory', [])
         processed_args['ansible_vars'] = terminal_args.inventory or config_options.get('vars', {})
-        if terminal_args.ansible_verbosity not in [True, 1, 2, 3]:
-            raise ValueError(f"ansible_verbosity: {terminal_args.ansible_verbosity}: must be 1, 2, or 3")
-        else:
-            processed_args['ansible_verbosity'] = terminal_args.ansible_verbosity           
 
+        verbosity_values = {0, 1, 2, 3, 4}
+        if terminal_args.ansible_verbosity in verbosity_values:
+            processed_args['ansible_verbosity'] = terminal_args.ansible_verbosity           
+        else:
+            # Handle invalid verbosity
+            raise ValueError(
+                """invalid ansible_verbosity: must be one of the following numerical values.
+                       0 (default): Displays only critical information.
+                       1 (-v):      Shows basic information like task names and results.
+                       2 (-vv):     Includes more detailed output, such as variable values.
+                       3 (-vvv):    Displays additional debugging data, such as task-level operations.
+                       4 (-vvvv):   Enables connection debugging, providing a deep dive into network communication."""
+            )
     processed_args['parent'] = terminal_args.parent or config_options.get('parent', 'scratch')
     processed_args['proxy'] = terminal_args.proxy or config_options.get('proxy', '')
 
