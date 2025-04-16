@@ -167,6 +167,14 @@ options:
   #
   # The Ansible inventory to pass corresponding with the playbook(s).
   inventory: 'inventory/'
+  #
+  # The numerical Ansible verbosity level:
+  #   0 (default): Displays only critical information.
+  #   1 (-v): Shows basic information like task names and results.
+  #   2 (-vv): Includes more detailed output, such as variable values.
+  #   3 (-vvv): Displays additional debugging data, such as task-level operations.
+  #   4 (-vvvv): Enables connection debugging, providing a deep dive into network communication.
+  ansible_verbosity: '3'
 
   # Everything else is the same format as base layer.
   name: 'ansible-layer'

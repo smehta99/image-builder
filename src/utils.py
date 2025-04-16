@@ -67,7 +67,7 @@ def cmd(
     CompletedProcess(process.args, retcode)
     return retcode
    
-def run_playbook(cnames, ansible_inv):
+def run_playbook(cnames, ansible_inv, ansible_verbosity):
 
     if plugin_loader_available:
         init_plugin_loader()
@@ -110,7 +110,7 @@ def run_playbook(cnames, ansible_inv):
       module_path=None,
       forks=100,
       private_key_file=None,
-      verbosity=True,
+      verbosity=ansible_verbosity,
       check=False,
       start_at_task=None,
       subset=subset
