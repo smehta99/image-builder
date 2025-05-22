@@ -165,5 +165,7 @@ class Layer:
             self.logger.error("Unrecognized layer type")
             sys.exit("Exiting now ...")
         
+        # Publish the layer
+        self.logger.info("Publishing Layer")
         publish(cname, self.args)
         

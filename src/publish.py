@@ -55,9 +55,12 @@ def publish(cname, args):
     parent = args['parent']
     
     # Generate standard labels
+    print("Generating labels")
     labels = _generate_labels(args)
+    print("Labels: " + str(labels))
     
     if args['publish_local']:
+        print("Publishing to local storage")
         for tag in publish_tags:
             # Add labels if they exist
             if labels:
@@ -69,15 +72,16 @@ def publish(cname, args):
                 cmd(["buildah","commit", cname, layer_name+':'+tag], stderr_handler=logging.warn)
 
     if args['publish_s3']:
-        print("pushing to s3")
         s3_prefix = args['s3_prefix']
         s3_bucket = args['s3_bucket']
+        print("Publishing to S3 at " + s3_bucket)
         for tag in publish_tags:
             s3_push(cname, layer_name, credentials, tag, s3_prefix, s3_bucket)
 
     if args['publish_registry']:
         registry_opts = args['registry_opts_push']
         publish_dest = args['publish_registry']
+        print("Publishing to registry at " + publish_dest)
         for tag in publish_tags:
             # Add labels if they exist
             if labels:
