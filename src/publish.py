@@ -67,9 +67,8 @@ def publish(cname, args):
                 label_args = []
                 for key, value in labels.items():
                     label_args.extend(['--label', f'{key}={value}'])
-                cmd(["buildah", "commit"] + label_args + [cname, layer_name+':'+tag], stderr_handler=logging.warn)
-            else:
-                cmd(["buildah","commit", cname, layer_name+':'+tag], stderr_handler=logging.warn)
+                cmd(["buildah", "config"] + label_args + [cname], stderr_handler=logging.warn)
+            cmd(["buildah","commit", cname, layer_name+':'+tag], stderr_handler=logging.warn)
 
     if args['publish_s3']:
         s3_prefix = args['s3_prefix']
