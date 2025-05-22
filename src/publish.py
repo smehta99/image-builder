@@ -18,7 +18,7 @@ def _generate_labels(args):
     # Basic metadata
     labels['org.openchami.image.name'] = args['name']
     labels['org.openchami.image.type'] = args['layer_type']
-    labels['org.openchami.image.package-manager'] = args['pkg_manager']
+    labels['org.openchami.image.package-manager'] = args['pkg_man']
     labels['org.openchami.image.parent'] = args['parent']
     
     # Version/tag information
