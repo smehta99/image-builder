@@ -175,6 +175,35 @@ class Installer:
         if rc == 104:
             raise Exception("Installing base packages failed")
 
+    def install_base_modules(self, modules, registry_loc, proxy):
+        # check if there are packages groups to install
+        if len(modules) == 0:
+            logging.warn("PACKAGE MODULES: no modules passed to install\n")
+            return
+
+        logging.info(f"PACKAGE MODULES: Installing these modules to {self.cname}")
+        logging.info("\n".join(modules))
+        args = []
+
+        if self.pkg_man == "zypper":
+            logging.warn("zypper not supported for modules")
+        elif self.pkg_man == "dnf":
+            args.append("--setopt=reposdir="+os.path.join(self.mname, pathmod.sep_strip(registry_loc)))
+            args.append("--setopt=logdir="+os.path.join(self.tdir, self.pkg_man, "log"))
+            args.append("--setopt=cachedir="+os.path.join(self.tdir, self.pkg_man, "cache"))
+            if proxy != "":
+                args.append("--setopt=proxy="+proxy)
+            args.append("module enable")
+            args.append("-y")
+            args.append("--nogpgcheck")
+            args.append("--installroot")
+            args.append(self.mname)
+            args.extend(modules)
+
+        rc = cmd([self.pkg_man] + args)
+        if rc == 104:
+            raise Exception("Installing base packages failed")
+
     def install_base_commands(self, commands):
         # check if there are commands to install
         if len(commands) == 0:

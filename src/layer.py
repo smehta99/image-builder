@@ -19,7 +19,7 @@ class Layer:
         out.append(line)
         return out
 
-    def _build_base(self, repos, packages, package_groups, remove_packages, commands, copyfiles):
+    def _build_base(self, repos, modules, packages, package_groups, remove_packages, commands, copyfiles):
         dt_string = datetime.now().strftime("%Y%m%d%H%M%S")
 
         # container and mount name
@@ -69,6 +69,8 @@ class Layer:
 
         # Install Packages
         try:
+            # Enable modules
+            inst.install_base_modules(modules, repo_dest, self.args['proxy'])
             # Base Package Groups
             inst.install_base_package_groups(package_groups, repo_dest, self.args['proxy'])
             # Packages
@@ -143,13 +145,14 @@ class Layer:
         if self.args['layer_type'] == "base":
             
             repos = self.image_config.get_repos()
+            modules = self.image_config.get_modules()
             packages = self.image_config.get_packages()
             package_groups = self.image_config.get_package_groups()
             remove_packages = self.image_config.get_remove_packages()
             commands = self.image_config.get_commands()
             copyfiles = self.image_config.get_copy_files()
 
-            cname = self._build_base(repos, packages, package_groups, remove_packages, commands, copyfiles)
+            cname = self._build_base(repos, modules, packages, package_groups, remove_packages, commands, copyfiles)
         elif self.args['layer_type'] == "ansible":
             layer_name = self.args['name']
             print("Layer_Name =", layer_name)
