@@ -193,7 +193,8 @@ class Installer:
             args.append("--setopt=cachedir="+os.path.join(self.tdir, self.pkg_man, "cache"))
             if proxy != "":
                 args.append("--setopt=proxy="+proxy)
-            args.append("module enable")
+            args.append("module")
+            args.append("enable")
             args.append("-y")
             args.append("--nogpgcheck")
             args.append("--installroot")
