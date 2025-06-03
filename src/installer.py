@@ -176,34 +176,35 @@ class Installer:
             raise Exception("Installing base packages failed")
 
     def install_base_modules(self, modules, registry_loc, proxy):
-        # check if there are packages groups to install
+        # check if there are modules groups to install
         if len(modules) == 0:
             logging.warn("PACKAGE MODULES: no modules passed to install\n")
             return
-
-        logging.info(f"PACKAGE MODULES: Installing these modules to {self.cname}")
-        logging.info("\n".join(modules))
-        args = []
-
-        if self.pkg_man == "zypper":
-            logging.warn("zypper not supported for modules")
-        elif self.pkg_man == "dnf":
-            args.append("--setopt=reposdir="+os.path.join(self.mname, pathmod.sep_strip(registry_loc)))
-            args.append("--setopt=logdir="+os.path.join(self.tdir, self.pkg_man, "log"))
-            args.append("--setopt=cachedir="+os.path.join(self.tdir, self.pkg_man, "cache"))
-            if proxy != "":
-                args.append("--setopt=proxy="+proxy)
-            args.append("module")
-            args.append("enable")
-            args.append("-y")
-            args.append("--nogpgcheck")
-            args.append("--installroot")
-            args.append(self.mname)
-            args.extend(modules)
-
-        rc = cmd([self.pkg_man] + args)
-        if rc == 104:
-            raise Exception("Installing base packages failed")
+        logging.info(f"MODULES: Running these module commands for {self.cname}")
+        for mod_cmd, mod_list in modules.items():
+            logging.info(mod_cmd + ": " + " ".join(mod_list))
+        for mod_cmd, mod_list in modules.items():
+            args = []
+            if self.pkg_man == "zypper":
+                logging.warn("zypper does not support package groups")
+                return
+            elif self.pkg_man == "dnf":
+                args.append("--setopt=reposdir="+os.path.join(self.mname, pathmod.sep_strip(registry_loc)))
+                args.append("--setopt=logdir="+os.path.join(self.tdir, self.pkg_man, "log"))
+                args.append("--setopt=cachedir="+os.path.join(self.tdir, self.pkg_man, "cache"))
+                if proxy != "":
+                    args.append("--setopt=proxy="+proxy)
+                args.append("module")
+                args.append(mod_cmd)
+                args.append("-y")
+                args.append("--nogpgcheck")
+                args.append("--installroot")
+                args.append(self.mname)
+                args.extend(mod_list)
+            rc = cmd([self.pkg_man] + args)
+            if rc != 0:
+                raise Exception("Failed to run module cmd", mod_cmd, ' '.join(mod_list))
+            
 
     def install_base_commands(self, commands):
         # check if there are commands to install
