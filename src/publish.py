@@ -88,8 +88,7 @@ def publish(cname, args):
                 for key, value in labels.items():
                     label_args.extend(['--label', f'{key}={value}'])
                 cmd(["buildah", "config"] + label_args + [cname], stderr_handler=logging.warn)
-            else:
-                cmd(["buildah", "commit", cname, layer_name+':'+tag], stderr_handler=logging.warn)
+            cmd(["buildah", "commit", cname, layer_name+':'+tag], stderr_handler=logging.warn)
             registry_push(layer_name, registry_opts, tag, publish_dest)
 
     # Clean up
