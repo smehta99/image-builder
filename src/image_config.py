@@ -22,6 +22,9 @@ class ImageConfig:
     def get_options(self):
         return self.config_data.get('options', [])
 
+    def get_modules(self):
+        return self.config_data.get('modules', [])
+
     def get_packages(self):
         return self.config_data.get('packages', [])
 
@@ -44,6 +47,7 @@ if __name__ == "__main__":
     config = ImageConfig("ochami-images/base-configs/base.yaml")
     options = config.get_options()
     repos = config.get_repos()
+    modules = config.get_modules()
     package_groups = config.get_package_groups()
     packages = config.get_packages()
     remove_packages = config.get_remove_packages()
