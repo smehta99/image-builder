@@ -43,10 +43,14 @@ class ImageConfig:
     def get_repos(self):
         return self.config_data.get('repos', [])
 
+    def get_exclusive_repos(self):
+        return self.config_data.get('exclusive_repos', [])
+
 if __name__ == "__main__":
     config = ImageConfig("ochami-images/base-configs/base.yaml")
     options = config.get_options()
     repos = config.get_repos()
+    exclusive_repos = config.get_exclusive_repos()
     modules = config.get_modules()
     package_groups = config.get_package_groups()
     packages = config.get_packages()
@@ -56,6 +60,7 @@ if __name__ == "__main__":
 
     print("Options: ", options)
     print("Repos: ", repos)
+    print("Exclusive Repos: ", repos)
     print("Package Groups", package_groups)
     print("Packages: ", packages)
     print("Remove Packages: ", remove_packages)

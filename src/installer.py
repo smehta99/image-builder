@@ -92,6 +92,88 @@ class Installer:
                 if rc != 0:
                     raise Exception("Failed to install gpg key for", r['alias'], "at URL", r['gpg'])
 
+    def install_exclusive_repos(self, repos, repo_dest, proxy):
+        # check if there are exclusive repos passed for install
+        if len(repos) == 0:
+            logging.info("EXCLUSIVE_REPOS: no repos passed to install\n")
+            return
+
+        logging.info(f"EXCLUSIVE_REPOS: Wiping any existing repos")
+        wipe_args = [
+                "rm",
+                "-rf",
+                os.path.join(self.mname, pathmod.sep_strip(repo_dest), "*"),
+                os.path.join(self.mname, pathmod.sep_strip(repo_dest), ".*")
+        ]
+        rc = cmd(["sh", "-c", wipe_args.join(" ")])
+        if rc != 0:
+            raise Exception("Failed to delete existing repos")
+
+        logging.info(f"EXCLUSIVE_REPOS: Installing exclusively these repos to {self.cname}")
+        for r in repos:
+            args = []
+            logging.info(r['alias'] + ': ' + r['url'])
+            if self.pkg_man == "zypper":
+                args.append("-D")
+                args.append(os.path.join(self.mname, pathmod.sep_strip(repo_dest)))
+                args.append("addrepo")
+                args.append("-f")
+                args.append("-p")
+                if 'priority' in r:
+                    args.append(r['priority'])
+                else:
+                    args.append('99')
+                args.append(r['url'])
+                args.append(r['alias'])
+            elif self.pkg_man == "dnf":
+                args.append("--setopt=reposdir="+os.path.join(self.mname, pathmod.sep_strip(repo_dest)))
+                args.append("--setopt=logdir="+os.path.join(self.tdir, self.pkg_man, "log"))
+                args.append("--setopt=cachedir="+os.path.join(self.tdir, self.pkg_man, "cache"))
+                if proxy != "":
+                    args.append("--setopt=proxy="+proxy)
+                args.append("config-manager")
+                args.append("--save")
+                args.append("--add-repo")
+                args.append(r['url'])
+
+            rc = cmd([self.pkg_man] + args)
+            if rc != 0:
+                raise Exception("Failed to install repo", r['alias'], r['url'])
+
+            if proxy != "":
+                if r['url'].endswith('.repo'):
+                    repo_name = r['url'].split('/')[-1].split('.repo')[0] + "*"
+                elif r['url'].startswith('https'):
+                    repo_name = r['url'].split('https://')[1].replace('/','_')
+                elif r['url'].startswith('http'):
+                    repo_name = r['url'].split('http://')[1].replace('/','_')
+                args = []
+                args.append('config-manager')
+                args.append('--save')
+                args.append("--setopt=reposdir="+os.path.join(self.mname, pathmod.sep_strip(repo_dest)))
+                args.append("--setopt=logdir="+os.path.join(self.tdir, self.pkg_man, "log"))
+                args.append("--setopt=cachedir="+os.path.join(self.tdir, self.pkg_man, "cache"))
+                args.append('--setopt=*.proxy='+proxy)
+                args.append(repo_name)
+
+                rc = cmd([self.pkg_man] + args)
+                if rc != 0:
+                    raise Exception("Failed to set proxy for repo", r['alias'], r['url'], proxy)
+
+            if "gpg" in r:
+                # Using rpm apparently works for both Yum- and Zypper-based distros.
+                args = []
+                if proxy != "":
+                    arg_env = os.environ.copy()
+                    arg_env['https_proxy'] = proxy
+                args.append("--root="+self.mname)
+                args.append("--import")
+                args.append(r["gpg"])
+
+                rc = cmd(["rpm"] + args)
+                if rc != 0:
+                    raise Exception("Failed to install gpg key for", r['alias'], "at URL", r['gpg'])
+
     def install_base_packages(self, packages, registry_loc, proxy):
         # check if there are packages to install
         if len(packages) == 0:

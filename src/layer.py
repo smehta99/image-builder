@@ -19,7 +19,7 @@ class Layer:
         out.append(line)
         return out
 
-    def _build_base(self, repos, modules, packages, package_groups, remove_packages, commands, copyfiles):
+    def _build_base(self, repos, exclusive_repos, modules, packages, package_groups, remove_packages, commands, copyfiles):
         dt_string = datetime.now().strftime("%Y%m%d%H%M%S")
 
         # container and mount name
@@ -48,6 +48,18 @@ class Layer:
             inst = installer.Installer(self.args['pkg_man'], cname, mname)
         except Exception as e:
             self.logger.error(f"Error preparing installer: {e}")
+            cmd(["buildah","rm"] + [cname])
+            sys.exit("Exiting now ...")
+        except KeyboardInterrupt:
+            self.logger.error(f"Keyboard Interrupt")
+            cmd(["buildah","rm"] + [cname])
+            sys.exit("Exiting now ...")
+
+        # Install Exclusive Repos
+        try: 
+            inst.install_exclusive_repos(exclusive_repos, repo_dest, self.args['proxy'])
+        except Exception as e:
+            self.logger.error(f"Error installing exclusive repos: {e}")
             cmd(["buildah","rm"] + [cname])
             sys.exit("Exiting now ...")
         except KeyboardInterrupt:
@@ -145,6 +157,7 @@ class Layer:
         if self.args['layer_type'] == "base":
             
             repos = self.image_config.get_repos()
+            exclusive_repos = self.image_config.get_exclusive_repos()
             modules = self.image_config.get_modules()
             packages = self.image_config.get_packages()
             package_groups = self.image_config.get_package_groups()
@@ -152,7 +165,7 @@ class Layer:
             commands = self.image_config.get_commands()
             copyfiles = self.image_config.get_copy_files()
 
-            cname = self._build_base(repos, modules, packages, package_groups, remove_packages, commands, copyfiles)
+            cname = self._build_base(repos, exclusive_repos, modules, packages, package_groups, remove_packages, commands, copyfiles)
         elif self.args['layer_type'] == "ansible":
             layer_name = self.args['name']
             print("Layer_Name =", layer_name)
