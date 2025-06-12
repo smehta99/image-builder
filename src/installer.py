@@ -105,7 +105,7 @@ class Installer:
                 os.path.join(self.mname, pathmod.sep_strip(repo_dest), "*"),
                 os.path.join(self.mname, pathmod.sep_strip(repo_dest), ".*")
         ]
-        rc = cmd(["sh", "-c", wipe_args.join(" ")])
+        rc = cmd(["sh", "-c", " ".join(wipe_args)])
         if rc != 0:
             raise Exception("Failed to delete existing repos")
 
