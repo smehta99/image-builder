@@ -100,12 +100,17 @@ class Installer:
 
         logging.info(f"EXCLUSIVE_REPOS: Wiping any existing repos")
         wipe_args = [
+                "find",
+                os.path.join(self.mname, pathmod.sep_strip(repo_dest)),
+                "-mindepth",
+                "1",
+                "-exec",
                 "rm",
                 "-rf",
-                os.path.join(self.mname, pathmod.sep_strip(repo_dest), "*"),
-                os.path.join(self.mname, pathmod.sep_strip(repo_dest), ".*")
+                "{}",
+                ";"
         ]
-        rc = cmd(["sh", "-c", " ".join(wipe_args)])
+        rc = cmd(wipe_args)
         if rc != 0:
             raise Exception("Failed to delete existing repos")
 
