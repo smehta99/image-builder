@@ -140,6 +140,9 @@ packages:
 # control command verbosity. By default, it is 'INFO'.
 cmds:
   - cmd: 'echo hello'
+# 'cmd' also supports 'args' that are passed to 'buildah run'
+  - cmd: 'id user'
+    args: ['--volume', '/var/lib/sss:/var/lib/sss:z']
 
 # OpenSCAP options to use with scap_benchmark or oval_eval. Each OpenSCAP 
 # command gets passed to the shell. By default, the results from OpenSCAP will be saved 

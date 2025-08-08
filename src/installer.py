@@ -215,7 +215,10 @@ class Installer:
         logging.info(f"COMMANDS: running these commands in {self.cname}")
         for c in commands:
             logging.info(c['cmd'])
-            args = [self.cname, '--', 'bash', '-c', c['cmd']]
+            args = []
+            if 'args' in c:
+              args.extend(c['args'])
+            args.extend([self.cname, '--', 'bash', '-c', c['cmd']])
             if 'loglevel' in c:
                 if c['loglevel'].upper() == "INFO":
                     loglevel = logging.info
