@@ -215,10 +215,10 @@ class Installer:
         logging.info(f"COMMANDS: running these commands in {self.cname}")
         for c in commands:
             logging.info(c['cmd'])
-            args = []
-            if 'args' in c:
-              args.extend(c['args'])
-            args.extend([self.cname, '--', 'bash', '-c', c['cmd']])
+            build_cmd = ["buildah","run"]
+            if 'buildah_extra_args' in c:
+              build_cmd.extend(c['buildah_extra_args'])
+            args = [self.cname, '--', 'bash', '-c', c['cmd']]
             if 'loglevel' in c:
                 if c['loglevel'].upper() == "INFO":
                     loglevel = logging.info
@@ -228,7 +228,7 @@ class Installer:
                     loglevel = logging.error
             else:
                 loglevel = logging.error
-            out = cmd(["buildah","run"] + args, stderr_handler=loglevel)
+            out = cmd(build_cmd + args, stderr_handler=loglevel)
 
     def install_base_copyfiles(self, copyfiles):
         if len(copyfiles) == 0:
