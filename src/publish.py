@@ -82,14 +82,16 @@ def publish(cname, args):
         registry_opts = args['registry_opts_push']
         publish_dest = args['publish_registry']
         print("Publishing to registry at " + publish_dest)
+        image_name = layer_name+':'+publish_tags[0]
+        # Add labels if they exist
+        if labels:
+            label_args = []
+            for key, value in labels.items():
+                label_args.extend(['--label', f'{key}={value}'])
+            cmd(["buildah", "config"] + label_args + [cname], stderr_handler=logging.warn)
+        cmd(["buildah", "commit", cname, image_name], stderr_handler=logging.warn)
         for tag in publish_tags:
-            # Add labels if they exist
-            if labels:
-                label_args = []
-                for key, value in labels.items():
-                    label_args.extend(['--label', f'{key}={value}'])
-                cmd(["buildah", "config"] + label_args + [cname], stderr_handler=logging.warn)
-            cmd(["buildah", "commit", cname, layer_name+':'+tag], stderr_handler=logging.warn)
+            cmd(["buildah", "tag", image_name, layer_name+':'+tag], stderr_handler=logging.warn)
             registry_push(layer_name, registry_opts, tag, publish_dest)
 
     # Clean up
