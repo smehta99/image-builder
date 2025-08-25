@@ -13,10 +13,13 @@ To build an image using the container, the config file needs to be mapped into t
 podman run \
   --rm \
   --device /dev/fuse \
+  --userns keep-id:uid=1002,gid=1002 \
   -v /path/to/config.yaml:/home/builder/config.yaml \
   ghcr.io/openchami/image-build:latest \
   image-build --config config.yaml
 ```
+
+If you are building EL9 images, use the `ghcr.io/openchami/image-build-el9:latest` image.
 
 If the config.yaml pushes to S3, specify the credentials by adding `-e S3_ACCESS=<s3-user>` and `-e S3_SECRET=<s3-password>` to the command above. See [S3](#s3) below.
 
@@ -137,6 +140,9 @@ packages:
 # control command verbosity. By default, it is 'INFO'.
 cmds:
   - cmd: 'echo hello'
+# 'cmd' also supports 'buildah_extra_args' that are passed to 'buildah run'
+  - cmd: 'id user'
+    buildah_extra_args: ['--volume', '/var/lib/sss:/var/lib/sss:z']
 
 # OpenSCAP options to use with scap_benchmark or oval_eval. Each OpenSCAP 
 # command gets passed to the shell. By default, the results from OpenSCAP will be saved 
