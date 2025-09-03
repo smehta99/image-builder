@@ -53,7 +53,8 @@ class Layer:
         if package_manager == "zypper":
             repo_dest = "/etc/zypp/repos.d"
         elif package_manager == "dnf":
-            repo_dest = "/etc/yum.repos.d"
+            repo_dest = os.path.expanduser("~/.pkg_repos/yum.repos.d")
+            os.makedirs(repo_dest, exist_ok=True)
         else:
             self.logger.error("unsupported package manager")
 
