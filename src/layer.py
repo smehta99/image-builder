@@ -1,5 +1,6 @@
 from datetime import datetime
 import pathmod
+import stat
 import sys
 import os
 # written modules
@@ -55,7 +56,19 @@ class Layer:
             repo_dest = "/etc/zypp/repos.d"
         elif package_manager == "dnf":
             repo_dest = os.path.expanduser("~/.pkg_repos/yum.repos.d")
+            # Create repo dest, if needed
             os.makedirs(os.path.join(mname, pathmod.sep_strip(repo_dest)), exist_ok=True)
+
+            # Create dnf.conf file
+            os.makedirs(os.path.join(mname, "etc/dnf"), exist_ok=True)
+            os.mknod(os.path.join(mname, "etc/dnf/dnf.conf"), mode=0o644)
+
+            ## Add repo directory path to dnf.conf
+            dnf_conf = open(os.path.join(mname, "etc/dnf/dnf.conf"), "a")
+            dnf_conf.write("[main]\n")
+            dnf_conf.write("reposdir=" + repo_dest)
+            dnf_conf.close()
+
         else:
             self.logger.error("unsupported package manager")
 
