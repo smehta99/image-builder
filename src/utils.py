@@ -6,7 +6,7 @@ from ansible.parsing.dataloader import DataLoader
 from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.playbook import Playbook
 from ansible.vars.manager import VariableManager
-from ansible.config.manager import ConfigManager, Setting
+from ansible.config.manager import ConfigManager
 from ansible.cli.config import ConfigCLI
 from ansible.parsing.yaml.objects import AnsibleVaultEncryptedUnicode
 
