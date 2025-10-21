@@ -71,7 +71,7 @@ jobs:
           push: true
           tags:
             - ghcr.io/openchami/image-build:${{ steps.set_tag.outputs.tag }}
-            - ghcr.io/openchami/image-build:latest 
+            - ghcr.io/openchami/image-build:latest
 
       - name: Build and push Docker image (EL9)
         # Only run this step if a valid tag is computed
