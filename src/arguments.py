@@ -1,12 +1,13 @@
 import os
 import logging
+import platform
 
 def process_args(terminal_args, config_options):
     """
-    Processes command line arguements and configuration options to generate a processed arguement dictionary 
+    Processes command line arguments and configuration options to generate a processed argument dictionary 
 
     Returns: 
-        dict: Processed arguements dictionary
+        dict: Processed arguments dictionary
     """
     processed_args = {}
 
@@ -16,7 +17,7 @@ def process_args(terminal_args, config_options):
     
     processed_args['layer_type'] = terminal_args.layer_type or config_options.get('layer_type')
     if not processed_args['layer_type']:
-        raise ValueError("'layer_type' required in config file or as an arguement")
+        raise ValueError("'layer_type' required in config file or as an argument")
 
     if processed_args['layer_type'] == "base":
         processed_args['pkg_man'] = terminal_args.pkg_man or config_options.get('pkg_manager')
@@ -69,6 +70,27 @@ def process_args(terminal_args, config_options):
     processed_args['scap_benchmark'] = terminal_args.scap_benchmark or config_options.get('scap_benchmark', False)
     processed_args['oval_eval'] = terminal_args.oval_eval or config_options.get('oval_eval', False)
     processed_args['install_scap'] = terminal_args.install_scap or config_options.get('install_scap', False)
+    
+    # If no architecture is passed, use "host" arch.
+    processed_args['architectures'] = terminal_args.arch or config_options.get('architectures', ['host'])
+
+    # Map architectures to remove duplicates
+    if 'host' in processed_args['architectures']:
+        ind = processed_args['architectures'].index('host')
+        processed_args['architectures'][ind] = platform.machine().lower()
+    
+    arch_map = {
+        'amd64': 'amd64',
+        'x86_64': 'amd64',
+        'arm64': 'arm64',
+        'aarch64': 'arm64'
+    }
+
+    mapped_archs = set(map(lambda x: arch_map.get(x), processed_args['architectures']))
+    if None in mapped_archs:
+        raise ValueError("Only the following architectures are supported: x86_64/amd64, aarch64/arm64")
+
+    processed_args['architectures'] = list(mapped_archs)
 
     # If no publish options were passed in either the CLI or the config file, store locally.
     if not (processed_args['publish_s3']
@@ -83,10 +105,10 @@ def process_args(terminal_args, config_options):
 
 def print_args(args):
     """
-    Takes in a dictionary of arguements and prints them out
+    Takes in a dictionary of arguments and prints them out
     """
     print()
-    logging.info("ARGUEMENTS".center(50, '-'))
+    logging.info("ARGUMENTS".center(50, '-'))
 
     for key, value in args.items():
         # do not print credentials to output
