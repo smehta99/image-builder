@@ -17,7 +17,7 @@ class Layer:
         self.image_config = image_config
         self.logger = logging.getLogger(__name__)
 
-    def _build_base(self, repos, modules, packages, package_groups, remove_packages, commands, copyfiles, oscap_options, arch):
+    def _build_base(self, repos, modules, packages, package_groups, remove_packages, commands, copyfiles, oscap_options):
         # Set local variables
         dt_string = datetime.now().strftime("%Y%m%d%H%M%S")
         parent = self.args['parent']
@@ -39,9 +39,7 @@ class Layer:
 
         # Create a new container from parent
         out = []
-        cmd(["buildah", "from"] + registry_opts_pull +
-            [f"--arch={arch}", "--name", container + dt_string, parent],
-            stdout_handler = buildah_handler)
+        cmd(["buildah", "from"] + registry_opts_pull + ["--name", container + dt_string, parent], stdout_handler = buildah_handler)
         cname = out[0]
 
         # Only mount when doing a scratch install
@@ -181,15 +179,13 @@ class Layer:
 
         return cname
 
-    def _build_ansible(self, target, parent, ansible_groups, ansible_pb, ansible_inv, ansible_vars, ansible_verbosity, arch):
+    def _build_ansible(self, target, parent, ansible_groups, ansible_pb, ansible_inv, ansible_vars, ansible_verbosity):
         cnames = {}
         def buildah_handler(line):
             out.append(line)
 
         out = []
-        cmd(["buildah","from"] + self.args['registry_opts_pull'] +
-            [f"--arch={arch}","--name", target, parent],
-            stdout_handler = buildah_handler)
+        cmd(["buildah","from"] + self.args['registry_opts_pull'] + ["--name", target, parent], stdout_handler = buildah_handler)
         container_name = out[0]
 
         cnames[container_name] = { 
@@ -210,42 +206,33 @@ class Layer:
     def build_layer(self):
         print("BUILD LAYER".center(50, '-'))
 
-        for arch in self.args['architectures']:
-            if self.args['layer_type'] == "base":
-                
-                repos = self.image_config.get_repos()
-                modules = self.image_config.get_modules()
-                packages = self.image_config.get_packages()
-                package_groups = self.image_config.get_package_groups()
-                remove_packages = self.image_config.get_remove_packages()
-                commands = self.image_config.get_commands()
-                copyfiles = self.image_config.get_copy_files()
-                oscap_options = self.image_config.get_oscap_options()
-
-                cname = self._build_base(repos, modules, packages, package_groups, remove_packages, commands, copyfiles, oscap_options, arch)
-            elif self.args['layer_type'] == "ansible":
-                layer_name = self.args['name']
-                print("Layer_Name =", layer_name)
-                parent = self.args['parent']
-                ansible_groups = self.args['ansible_groups']
-                ansible_pb = self.args['ansible_pb']
-                ansible_inv = self.args['ansible_inv']
-                ansible_vars = self.args['ansible_vars']
-                ansible_verbosity = self.args['ansible_verbosity']
-
-                cname = self._build_ansible(layer_name, parent, ansible_groups, ansible_pb, ansible_inv, ansible_vars, ansible_verbosity, arch)
-            else:
-                self.logger.error("Unrecognized layer type")
-                sys.exit("Exiting now ...")
+        if self.args['layer_type'] == "base":
             
-            # Publish the layer
-            self.logger.info("Publishing Layer")
-            publish(cname, self.args, arch)
+            repos = self.image_config.get_repos()
+            modules = self.image_config.get_modules()
+            packages = self.image_config.get_packages()
+            package_groups = self.image_config.get_package_groups()
+            remove_packages = self.image_config.get_remove_packages()
+            commands = self.image_config.get_commands()
+            copyfiles = self.image_config.get_copy_files()
+            oscap_options = self.image_config.get_oscap_options()
 
-        # Manifest Push
-        publish_tags = self.args['publish_tags']
-        tags = publish_tags if isinstance(publish_tags, list) else [publish_tags]
-        for tag in tags:
-            manifest_name = f"{self.args['publish_registry']}/{self.args['name']}:{tag}"
-            print("pushing manifest " + manifest_name)
-            cmd(["buildah", "manifest", "push", "--all"] + self.args['registry_opts_push'] + [manifest_name, f"docker://{manifest_name}"])
+            cname = self._build_base(repos, modules, packages, package_groups, remove_packages, commands, copyfiles, oscap_options)
+        elif self.args['layer_type'] == "ansible":
+            layer_name = self.args['name']
+            print("Layer_Name =", layer_name)
+            parent = self.args['parent']
+            ansible_groups = self.args['ansible_groups']
+            ansible_pb = self.args['ansible_pb']
+            ansible_inv = self.args['ansible_inv']
+            ansible_vars = self.args['ansible_vars']
+            ansible_verbosity = self.args['ansible_verbosity']
+
+            cname = self._build_ansible(layer_name, parent, ansible_groups, ansible_pb, ansible_inv, ansible_vars, ansible_verbosity)
+        else:
+            self.logger.error("Unrecognized layer type")
+            sys.exit("Exiting now ...")
+        
+        # Publish the layer
+        self.logger.info("Publishing Layer")
+        publish(cname, self.args)

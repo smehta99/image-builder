@@ -7,7 +7,7 @@ from datetime import datetime
 from utils import cmd, get_os
 import logging
 
-def _generate_labels(args, arch):
+def _generate_labels(args):
     """Generate standard labels from configuration data"""
     labels = {}
     
@@ -19,7 +19,7 @@ def _generate_labels(args, arch):
     labels['org.openchami.image.name'] = args['name']
     labels['org.openchami.image.type'] = args['layer_type']
     labels['org.openchami.image.parent'] = args['parent']
-    labels['org.openchami.image.arch'] = arch
+    labels['org.openchami.image.arch'] = args['architecture']
     if 'pkg_man' in args:
         labels['org.openchami.image.package-manager'] = args['pkg_man']
     
@@ -46,7 +46,7 @@ def _generate_labels(args, arch):
     
     return labels
 
-def publish(cname, args, arch):
+def publish(cname, args):
 
     layer_name = args['name']
     publish_tags = args['publish_tags']
@@ -58,7 +58,7 @@ def publish(cname, args, arch):
     
     # Generate standard labels
     print("Generating labels")
-    labels = _generate_labels(args, arch)
+    labels = _generate_labels(args)
     print("Labels: " + str(labels))
     
     if args['publish_local']:
@@ -70,19 +70,22 @@ def publish(cname, args, arch):
                 for key, value in labels.items():
                     label_args.extend(['--label', f'{key}={value}'])
                 cmd(["buildah", "config"] + label_args + [cname], stderr_handler=logging.warn)
-            cmd(["buildah","commit", cname, layer_name+':'+tag+'-'+arch], stderr_handler=logging.warn)
+            cmd(["buildah","commit", cname, layer_name+':'+tag], stderr_handler=logging.warn)
+
+            image_name = layer_name+':'+tag
+
 
     if args['publish_s3']:
         s3_prefix = args['s3_prefix']
         s3_bucket = args['s3_bucket']
         print("Publishing to S3 at " + s3_bucket)
         for tag in publish_tags:
-            updated_tag = f'{tag}-{arch}'
-            s3_push(cname, layer_name, credentials, updated_tag, s3_prefix, s3_bucket)
+            s3_push(cname, layer_name, credentials, tag, s3_prefix, s3_bucket)
 
     if args['publish_registry']:
         registry_opts = args['registry_opts_push']
         publish_dest = args['publish_registry']
+        arch = args['architecture']
         print("Publishing to registry at " + publish_dest)
         image_name = layer_name+':'+publish_tags[0]
 
@@ -179,22 +182,26 @@ def s3_push(cname, layer_name, credentials, publish_tags, s3_prefix, s3_bucket):
         push_file(tmpdir + '/rootfs', image_name, s3, s3_bucket)
 
 def registry_push(layer_name, registry_opts, publish_tags, registry_endpoint, arch):
+
+    # Push boot image to registry
     image_name = layer_name+':'+publish_tags
-    print("pushing layer " + layer_name + " to " + registry_endpoint +'/'+f'{image_name}-{arch}')
+    print("Pushing layer " + layer_name + " to " + registry_endpoint +'/'+f'{image_name}-{arch}')
     args = registry_opts + [f'{image_name}-{arch}', registry_endpoint +'/'+f'{image_name}-{arch}']
     cmd(["buildah", "push"] + args, stderr_handler=logging.warn)
 
-
-    # Create a manifest if it does not exist
+    # Create a tmp manifest
     manifest_name = f"{registry_endpoint}/{image_name}"
-
-    inspect_cmd = ["buildah", "manifest", "exists", manifest_name]
-    if not manifest_check(inspect_cmd):
-        cmd(["buildah", "manifest", "create"] + registry_opts + [manifest_name], stderr_handler=logging.warn)
+    cmd(["buildah", "manifest", "create"] + registry_opts + [manifest_name], stderr_handler=logging.warn)
 
     # Update manifest and push
     manifest_add_args = registry_opts + [manifest_name, f"docker://{manifest_name}-{arch}"]
     cmd(["buildah", "manifest", "add"] + manifest_add_args, stderr_handler=logging.warn)
+    
+    print(f"Pushing manifest {manifest_name}")
+    cmd(["buildah", "manifest", "push", "--all"] + registry_opts + [manifest_name, f"docker://{manifest_name}"])
+
+    print(f"Manifest pushed. Removing local manifest {manifest_name}")
+    cmd(["buildah", "manifest", "rm", manifest_name])
 
 def manifest_check(inspect_cmd):
     try:

@@ -70,27 +70,8 @@ def process_args(terminal_args, config_options):
     processed_args['scap_benchmark'] = terminal_args.scap_benchmark or config_options.get('scap_benchmark', False)
     processed_args['oval_eval'] = terminal_args.oval_eval or config_options.get('oval_eval', False)
     processed_args['install_scap'] = terminal_args.install_scap or config_options.get('install_scap', False)
-    
-    # If no architecture is passed, use "host" arch.
-    processed_args['architectures'] = terminal_args.arch or config_options.get('architectures', ['host'])
 
-    # Map architectures to remove duplicates
-    if 'host' in processed_args['architectures']:
-        ind = processed_args['architectures'].index('host')
-        processed_args['architectures'][ind] = platform.machine().lower()
-    
-    arch_map = {
-        'amd64': 'amd64',
-        'x86_64': 'amd64',
-        'arm64': 'arm64',
-        'aarch64': 'arm64'
-    }
-
-    mapped_archs = set(map(lambda x: arch_map.get(x), processed_args['architectures']))
-    if None in mapped_archs:
-        raise ValueError("Only the following architectures are supported: x86_64/amd64, aarch64/arm64")
-
-    processed_args['architectures'] = list(mapped_archs)
+    processed_args['architecture'] = platform.machine().lower()
 
     # If no publish options were passed in either the CLI or the config file, store locally.
     if not (processed_args['publish_s3']
