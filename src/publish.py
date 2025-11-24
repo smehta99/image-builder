@@ -202,10 +202,3 @@ def registry_push(layer_name, registry_opts, publish_tags, registry_endpoint, ar
 
     print(f"Manifest pushed. Removing local manifest {manifest_name}")
     cmd(["buildah", "manifest", "rm", manifest_name])
-
-def manifest_check(inspect_cmd):
-    try:
-        cmd(inspect_cmd)
-        return True
-    except Exception:
-        return False
